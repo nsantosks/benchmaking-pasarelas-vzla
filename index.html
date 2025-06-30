@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Interactivo: Instapago vs. PagoFlash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Neutral Tech -->
+    <!-- Application Structure Plan: A single-page dashboard design is used to facilitate direct comparison, moving away from the linear report format. A top navigation bar allows users to switch between thematic sections: 'Resumen', 'Comisiones', 'Usabilidad', 'Liquidación', 'Seguridad/Soporte', and 'Recomendación'. This structure prioritizes user-driven exploration based on their own priorities (e.g., a user can jump directly to comparing fees). The default 'Resumen' view provides an immediate high-level summary and the final recommendation, making the key takeaway instantly accessible. This architecture is chosen for its superior usability and clarity for a user who needs to make a quick but informed decision. -->
+    <!-- Visualization & Content Choices:
+    - **Comisiones:** Report Info: Card fees (Instapago 2.4-5.3%, PagoFlash 3.5%), Pago Móvil fees. -> Goal: Compare costs. -> Viz: Chart.js Bar Chart. -> Interaction: Tooltips. -> Justification: Provides an immediate, clear visual comparison of the primary decision factor (cost). -> Library: Chart.js (Canvas).
+    - **Tiempos de Liquidación:** Report Info: Instapago (4-5 days), PagoFlash (48 hours). -> Goal: Contrast settlement speed. -> Viz: HTML/CSS timeline diagram. -> Interaction: None. -> Justification: A simple visual diagram is more impactful than text alone for showing the significant time difference. -> Method: HTML/CSS with Tailwind.
+    - **Feature Comparison (Usabilidad, Métodos de Pago, etc.):** Report Info: Qualitative data on integration, support channels, etc. -> Goal: Organize and compare features. -> Viz: Side-by-side tables/lists in a two-column grid layout. -> Interaction: None. -> Justification: A structured grid layout allows for easy one-to-one comparison of features. Unicode icons are used for quick visual cues. -> Method: HTML/CSS with Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            border: 1px solid #e5e7eb;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Análisis Comparativo de Pasarelas de Pago</h1>
+            <p class="mt-2 text-lg text-gray-600">Instapago vs. PagoFlash para tu Negocio en Venezuela</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8">
+            <button class="nav-button active text-sm sm:text-base font-medium py-2 px-4 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-100" onclick="showSection('resumen')">Resumen</button>
+            <button class="nav-button text-sm sm:text-base font-medium py-2 px-4 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-100" onclick="showSection('comisiones')">Comisiones</button>
+            <button class="nav-button text-sm sm:text-base font-medium py-2 px-4 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-100" onclick="showSection('usabilidad')">Facilidad de Uso</button>
+            <button class="nav-button text-sm sm:text-base font-medium py-2 px-4 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-100" onclick="showSection('liquidacion')">Liquidación y Pagos</button>
+            <button class="nav-button text-sm sm:text-base font-medium py-2 px-4 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-100" onclick="showSection('seguridad')">Seguridad y Soporte</button>
+            <button class="nav-button text-sm sm:text-base font-medium py-2 px-4 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-100" onclick="showSection('recomendacion')">Recomendación</button>
+        </nav>
+
+        <main>
+            <section id="resumen" class="content-section active">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Resumen Ejecutivo y Veredicto</h2>
+                    <p class="mt-2 text-md text-gray-600 max-w-3xl mx-auto">Esta sección te ofrece una vista rápida de las fortalezas y debilidades de cada plataforma, junto con la recomendación final. El objetivo es darte una base sólida para entender cuál se adapta mejor a un negocio de bajo volumen que prioriza costos bajos y simplicidad.</p>
+                </div>
+                 <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg mb-8 max-w-4xl mx-auto">
+                    <p class="font-bold">Recomendación Final: PagoFlash</p>
+                    <p>Para un negocio de venta de plantillas AppSheet con tus características, PagoFlash es la opción superior por su transparencia en costos, mayor facilidad de integración para no-técnicos, y tiempos de liquidación significativamente más rápidos.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
+                    <article class="card">
+                        <div class="flex items-center mb-4">
+                           <div class="p-2 bg-orange-100 rounded-full mr-4"><span class="text-2xl">🏦</span></div>
+                            <h3 class="text-2xl font-bold text-gray-900">Instapago</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Una solución robusta y establecida con fuertes alianzas bancarias, ideal para empresas más grandes y comercios físicos.</p>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Credibilidad:</span> Preferida por grandes corporaciones en Venezuela.</div></li>
+                            <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Seguridad:</span> Cumplimiento explícito con el estándar PCI DSS.</div></li>
+                             <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Pagos Zelle:</span> Ofrece un validador para conciliar pagos Zelle.</div></li>
+                            <li class="flex items-start"><span class="font-bold mr-2 text-red-500">✗</span><div><span class="font-semibold">Comisiones:</span> Variables (2.4% - 5.3%) y dependen del banco, con poca transparencia.</div></li>
+                            <li class="flex items-start"><span class="font-bold mr-2 text-red-500">✗</span><div><span class="font-semibold">Liquidación Lenta:</span> Los fondos tardan de 4 a 5 días hábiles en acreditarse.</div></li>
+                            <li class="flex items-start"><span class="font-bold mr-2 text-red-500">✗</span><div><span class="font-semibold">Integración Técnica:</span> Requiere conocimientos técnicos o dependencia de su equipo.</div></li>
+                        </ul>
+                    </article>
+                     <article class="card border-2 border-blue-500">
+                        <div class="flex items-center mb-4">
+                           <div class="p-2 bg-blue-100 rounded-full mr-4"><span class="text-2xl">⚡</span></div>
+                            <h3 class="text-2xl font-bold text-gray-900">PagoFlash</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Una plataforma ágil y moderna, diseñada con un enfoque en la simplicidad, la inclusión financiera y la facilidad de uso para todos.</p>
+                        <ul class="space-y-3 text-gray-700">
+                           <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Comisiones Transparentes:</span> 3.5% fijo para tu volumen, sin sorpresas.</div></li>
+                           <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Fácil de Usar:</span> Múltiples opciones "plug-and-play" como enlaces de pago.</div></li>
+                           <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Liquidación Rápida:</span> Fondos en tu cuenta bancaria en 48 horas.</div></li>
+                           <li class="flex items-start"><span class="font-bold mr-2 text-green-500">✓</span><div><span class="font-semibold">Flexibilidad de Moneda:</span> Permite mostrar precios en USD con conversión automática.</div></li>
+                           <li class="flex items-start"><span class="font-bold mr-2 text-red-500">✗</span><div><span class="font-semibold">Seguridad (PCI):</span> No declara explícitamente cumplimiento PCI DSS en la documentación pública.</div></li>
+                           <li class="flex items-start"><span class="font-bold mr-2 text-red-500">✗</span><div><span class="font-semibold">Reputación:</span> Menos conocida en el sector corporativo que Instapago.</div></li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <section id="comisiones" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Comparación de Comisiones</h2>
+                    <p class="mt-2 text-md text-gray-600 max-w-3xl mx-auto">La comisión es tu prioridad número uno. Este gráfico visualiza la diferencia de costos entre ambas plataformas para los métodos de pago más comunes en tu negocio, ayudándote a ver claramente cuál es la opción más económica.</p>
+                </div>
+                <div class="card">
+                     <div class="chart-container">
+                        <canvas id="commissionChart"></canvas>
+                    </div>
+                </div>
+                <div class="mt-8 grid md:grid-cols-2 gap-6 lg:gap-8">
+                    <div class="p-6 bg-white rounded-lg border">
+                        <h4 class="font-bold text-lg mb-2">Instapago: Costo Variable</h4>
+                        <p class="text-gray-600">La principal desventaja es la incertidumbre. La comisión por pagos con tarjeta no es fija, sino que <span class="font-semibold">depende del banco con el que te afilies</span>, variando entre un 2.4% y un 5.3%. Esto dificulta la planificación financiera. Para Pago Móvil, la comisión es de hasta 1.5%, significativamente más alta que la competencia.</p>
+                    </div>
+                    <div class="p-6 bg-white rounded-lg border">
+                        <h4 class="font-bold text-lg mb-2">PagoFlash: Costo Predecible</h4>
+                        <p class="text-gray-600">Ofrece total transparencia. Para tu volumen de negocio (<100 transacciones/mes), la comisión es un <span class="font-semibold">3.5% fijo para tarjetas</span>. Para envíos de Pago Móvil a bancos, es de hasta 0.30%. Esto te permite calcular tus costos con precisión y, además, su estructura escalonada te recompensa con comisiones más bajas a medida que tu negocio crece.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="usabilidad" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Facilidad de Uso e Integración Técnica</h2>
+                    <p class="mt-2 text-md text-gray-600 max-w-3xl mx-auto">Tu segunda prioridad es la facilidad de uso. Esta sección compara qué tan simple es integrar cada plataforma en tu página de ventas, especialmente si no tienes conocimientos técnicos avanzados. El objetivo es una solución que puedas gestionar tú mismo.</p>
+                </div>
+                 <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
+                    <article class="card">
+                         <div class="flex items-center mb-4">
+                           <div class="p-2 bg-orange-100 rounded-full mr-4"><span class="text-2xl">🏦</span></div>
+                            <h3 class="text-xl font-bold text-gray-900">Instapago</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4 font-semibold">"Fácil con asistencia"</p>
+                        <p class="text-gray-600 mb-4">Prometen guiarte en el proceso, pero su solución no es autónoma. La facilidad depende de la ayuda de sus expertos.</p>
+                        <ul class="space-y-3">
+                            <li><span class="font-bold mr-2">👨‍💻</span><span class="font-semibold">Requisitos Técnicos:</span> Exige tener dominio, hosting y acceso al código fuente.</li>
+                            <li><span class="font-bold mr-2">📞</span><span class="font-semibold">Dependencia de Soporte:</span> La integración probablemente requerirá la intervención de su equipo técnico.</li>
+                            <li><span class="font-bold mr-2">🔗</span><span class="font-semibold">Soluciones:</span> Ofrecen un "Botón de Pago" como principal método de integración web.</li>
+                             <li><span class="font-bold mr-2">🏦</span><span class="font-semibold">Requisito Bancario:</span> Es indispensable tener una cuenta en uno de sus bancos aliados para la afiliación.</li>
+                        </ul>
+                    </article>
+                    <article class="card">
+                         <div class="flex items-center mb-4">
+                           <div class="p-2 bg-blue-100 rounded-full mr-4"><span class="text-2xl">⚡</span></div>
+                            <h3 class="text-xl font-bold text-gray-900">PagoFlash</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4 font-semibold">"Absurdamente sencillo"</p>
+                        <p class="text-gray-600 mb-4">Su filosofía se centra en la autonomía del usuario, ofreciendo herramientas que puedes configurar tú mismo sin programar.</p>
+                         <ul class="space-y-3">
+                            <li><span class="font-bold mr-2">👍</span><span class="font-semibold">"Plug-and-Play":</span> Herramientas como "Enlaces de Cobro" (PagoClick) y PagoMail se pueden crear y gestionar desde tu panel sin código.</li>
+                            <li><span class="font-bold mr-2">📄</span><span class="font-semibold">Documentación Clara:</span> API pública y bien documentada para futuras integraciones si lo necesitas.</li>
+                            <li><span class="font-bold mr-2">🎨</span><span class="font-semibold">Personalización:</span> Permite personalizar la página de pago con tu logo y colores.</li>
+                            <li><span class="font-bold mr-2">🧩</span><span class="font-semibold">Flexibilidad:</span> La integración sencilla te permite empezar a vender de inmediato, ideal para un negocio unipersonal.</li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <section id="liquidacion" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Tiempos de Liquidación y Métodos de Pago</h2>
+                    <p class="mt-2 text-md text-gray-600 max-w-3xl mx-auto">La rapidez con la que dispones de tu dinero (liquidez) y la flexibilidad para recibir pagos son vitales. Aquí comparamos cuánto tarda cada plataforma en depositarte y qué métodos de pago aceptan, destacando una diferencia clave en el manejo de USD.</p>
+                </div>
+                 <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
+                    <article class="card">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Instapago</h3>
+                        <div class="text-center mb-6">
+                            <p class="text-gray-600">Tiempo de Liquidación</p>
+                            <p class="text-4xl font-bold text-orange-500">4-5 Días</p>
+                            <p class="text-sm text-gray-500">Hábiles</p>
+                        </div>
+                        <hr class="my-6">
+                        <h4 class="font-semibold text-lg mb-3">Métodos de Pago Aceptados:</h4>
+                        <ul class="space-y-2 text-gray-700">
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Tarjetas de Crédito/Débito Nacionales</li>
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Tarjetas de Crédito Internacionales</li>
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Pago Móvil Interbancario</li>
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Transferencias y Zelle (con validador)</li>
+                           <li class="flex items-center"><span class="text-red-500 mr-2">❌</span>Criptomonedas (No soportado)</li>
+                        </ul>
+                         <div class="mt-4 p-3 bg-orange-50 rounded-lg">
+                            <p class="font-semibold text-orange-800">Limitación Clave:</p>
+                            <p class="text-sm text-orange-700">Todos los pagos, incluyendo los internacionales, se procesan y liquidan <span class="font-bold">exclusivamente en Bolívares</span> a bancos nacionales.</p>
+                        </div>
+                    </article>
+                     <article class="card">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">PagoFlash</h3>
+                        <div class="text-center mb-6">
+                            <p class="text-gray-600">Tiempo de Liquidación</p>
+                            <p class="text-4xl font-bold text-blue-500">48 Horas</p>
+                            <p class="text-sm text-gray-500">A cuenta bancaria externa</p>
+                        </div>
+                         <hr class="my-6">
+                        <h4 class="font-semibold text-lg mb-3">Métodos de Pago Aceptados:</h4>
+                        <ul class="space-y-2 text-gray-700">
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Tarjetas de Crédito/Débito Nacionales</li>
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Tarjetas de Crédito Internacionales</li>
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Pago Móvil Interbancario</li>
+                           <li class="flex items-center"><span class="text-green-500 mr-2">✔️</span>Transferencias Bancarias</li>
+                           <li class="flex items-center"><span class="text-red-500 mr-2">❌</span>Criptomonedas (No soportado)</li>
+                        </ul>
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p class="font-semibold text-blue-800">Ventaja Clave:</p>
+                            <p class="text-sm text-blue-700">Aunque liquida en Bolívares, su API permite mostrar precios en USD y realiza la <span class="font-bold">conversión a Bolívares automáticamente</span> en la pasarela de pago.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+            
+            <section id="seguridad" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Seguridad y Soporte Técnico</h2>
+                    <p class="mt-2 text-md text-gray-600 max-w-3xl mx-auto">La confianza es esencial. Esta sección evalúa las medidas de seguridad que cada plataforma implementa para proteger tus transacciones y las de tus clientes, así como la calidad y accesibilidad de su soporte técnico cuando necesitas ayuda.</p>
+                </div>
+                 <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
+                    <article class="card">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Instapago</h3>
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-lg mb-2">🛡️ Seguridad</h4>
+                            <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                <li><span class="font-bold">Cumplimiento PCI DSS:</span> Declaran explícitamente cumplir con este estándar global de seguridad de datos de tarjetas, su punto más fuerte en seguridad.</li>
+                                <li>Protección contra fraude y herramientas de seguimiento.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">🎧 Soporte Técnico</h4>
+                             <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                <li>Prometen acompañamiento y asistencia técnica dedicada.</li>
+                                <li>Canales de comunicación para resolver dudas e incidencias.</li>
+                                <li>Una fuente de terceros reporta tiempos de respuesta muy rápidos.</li>
+                            </ul>
+                        </div>
+                    </article>
+                     <article class="card">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">PagoFlash</h3>
+                         <div class="mb-6">
+                            <h4 class="font-semibold text-lg mb-2">🛡️ Seguridad</h4>
+                             <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                <li><span class="font-bold">Certificación SSL:</span> Aseguran comunicaciones encriptadas.</li>
+                                <li>Monitoreo constante de transacciones para evitar fraude.</li>
+                                 <li>No mencionan explícitamente cumplimiento PCI DSS en la información pública.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">🎧 Soporte Técnico</h4>
+                            <ul class="space-y-2 list-disc list-inside text-gray-700">
+                               <li><span class="font-bold">Múltiples Canales:</span> Ofrecen soporte telefónico y varios correos electrónicos específicos (cliente, desarrollador, etc.).</li>
+                               <li><span class="font-bold">Asesoría Personalizada:</span> Permiten agendar asesorías, sugiriendo un enfoque más proactivo.</li>
+                               <li>Equipo dedicado para atender cualquier eventualidad.</li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="recomendacion" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Recomendación Final y Porqué</h2>
+                    <p class="mt-2 text-md text-gray-600 max-w-3xl mx-auto">Basado en el análisis profundo de todas las variables y ponderando tus prioridades (menor comisión, facilidad de uso, liquidez y soporte), esta es la conclusión estratégica para tu negocio de plantillas AppSheet.</p>
+                </div>
+                <div class="card max-w-4xl mx-auto">
+                    <div class="text-center">
+                        <span class="text-5xl">🏆</span>
+                        <h3 class="text-2xl font-bold mt-4">La Mejor Opción: PagoFlash</h3>
+                        <p class="text-gray-600 mt-2">Mientras que Instapago es una pasarela potente para el mundo corporativo, <span class="font-semibold">PagoFlash se alinea casi perfectamente con las necesidades de un emprendedor digital</span> individual en Venezuela.</p>
+                    </div>
+                    <hr class="my-6">
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg">1. Ganas en Costos y Transparencia</h4>
+                            <p class="text-gray-700">La comisión fija del 3.5% de PagoFlash elimina la incertidumbre de las tarifas variables de Instapago. Sabrás exactamente cuánto pagas por cada venta, y sus comisiones de Pago Móvil son mucho más bajas. Esto impacta directamente en tu rentabilidad.</p>
+                        </div>
+                         <div>
+                            <h4 class="font-semibold text-lg">2. Ganas en Simplicidad y Autonomía</h4>
+                            <p class="text-gray-700">La capacidad de generar enlaces de pago sin escribir una línea de código es la ventaja decisiva en "facilidad de uso". Te permite empezar a vender de inmediato, sin depender de un desarrollador ni cumplir requisitos técnicos complejos.</p>
+                        </div>
+                         <div>
+                            <h4 class="font-semibold text-lg">3. Ganas en Liquidez</h4>
+                            <p class="text-gray-700">Recibir tu dinero en 48 horas en lugar de 4-5 días es una diferencia abismal para el flujo de caja de un negocio pequeño. Te da la agilidad para reinvertir y cubrir gastos rápidamente.</p>
+                        </div>
+                         <div>
+                            <h4 class="font-semibold text-lg">4. Ganas en Flexibilidad</h4>
+                            <p class="text-gray-700">Poder fijar tus precios en USD y que la plataforma maneje la conversión automáticamente es una herramienta poderosa en el mercado venezolano, facilitando las ventas tanto a nivel nacional como a potenciales clientes internacionales.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-r-lg">
+                        <p class="font-bold">Consideración sobre la Seguridad</p>
+                        <p>El único punto donde Instapago tiene una ventaja documentada es en su certificación PCI DSS. Sería prudente consultar directamente con PagoFlash sobre su nivel de cumplimiento para tener total tranquilidad, aunque sus medidas de seguridad son robustas para un negocio de tu escala.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const appData = {
+            commissions: {
+                labels: ['Tarjetas de Crédito', 'Pago Móvil (P2C)'],
+                instapago: [5.3, 1.5], 
+                pagoflash: [3.5, 0.3]
+            }
+        };
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelector(`button[onclick="showSection('${sectionId}')"]`).classList.add('active');
+        }
+
+        function createCommissionChart() {
+            const ctx = document.getElementById('commissionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: appData.commissions.labels,
+                    datasets: [
+                        {
+                            label: 'Instapago (Comisión Máx. %)',
+                            data: appData.commissions.instapago,
+                            backgroundColor: 'rgba(251, 146, 60, 0.7)',
+                            borderColor: 'rgba(251, 146, 60, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'PagoFlash (Comisión %)',
+                            data: appData.commissions.pagoflash,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Comisión (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Comparativa de Comisiones por Transacción',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        window.onload = function () {
+            showSection('resumen');
+            createCommissionChart();
+        };
+
+    </script>
+</body>
+</html>
